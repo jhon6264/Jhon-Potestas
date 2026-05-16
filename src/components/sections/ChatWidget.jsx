@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, MessageCircle, X } from 'lucide-react'
+import { ArrowRight, Check, Copy, MessageCircle, X } from 'lucide-react'
 import { chatConfig } from '../../data/chatConfig'
 import { sendChatMessage } from '../../services/chatClient'
 
@@ -27,32 +27,96 @@ function renderInlineMarkdown(text) {
   })
 }
 
-function ChatMessageContent({ content }) {
+function parseMarkdownBlocks(content) {
+  const blocks = []
+  const pattern = /```(\w+)?\n([\s\S]*?)```/g
+  let lastIndex = 0
+  let match = pattern.exec(content)
+
+  while (match) {
+    if (match.index > lastIndex) {
+      blocks.push({ type: 'text', content: content.slice(lastIndex, match.index) })
+    }
+
+    blocks.push({
+      type: 'code',
+      language: match[1] || 'text',
+      code: match[2].replace(/\n$/, ''),
+    })
+    lastIndex = pattern.lastIndex
+    match = pattern.exec(content)
+  }
+
+  if (lastIndex < content.length) {
+    blocks.push({ type: 'text', content: content.slice(lastIndex) })
+  }
+
+  return blocks.filter((block) => block.content?.trim() || block.code?.trim())
+}
+
+function TextBlock({ content }) {
   const blocks = String(content)
     .split(/\n{2,}/)
     .map((block) => block.trim())
     .filter(Boolean)
 
+  return blocks.map((block, index) => {
+    const lines = block.split('\n').map((line) => line.trim()).filter(Boolean)
+    const isList = lines.every((line) => /^([-*]\s+|\d+\.\s+)/.test(line))
+
+    if (isList) {
+      const isOrdered = lines.every((line) => /^\d+\.\s+/.test(line))
+      const ListTag = isOrdered ? 'ol' : 'ul'
+
+      return (
+        <ListTag key={`${block}-${index}`}>
+          {lines.map((line) => (
+            <li key={line}>{renderInlineMarkdown(line.replace(/^([-*]\s+|\d+\.\s+)/, ''))}</li>
+          ))}
+        </ListTag>
+      )
+    }
+
+    return <p key={`${block}-${index}`}>{renderInlineMarkdown(lines.join(' '))}</p>
+  })
+}
+
+function CodeBlock({ code, language }) {
+  const [isCopied, setIsCopied] = useState(false)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code)
+    setIsCopied(true)
+    window.setTimeout(() => setIsCopied(false), 1400)
+  }
+
+  return (
+    <div className="chat-code-block">
+      <div className="chat-code-head">
+        <span>{language}</span>
+        <button type="button" onClick={handleCopy} aria-label="Copy code">
+          {isCopied ? <Check size={15} /> : <Copy size={15} />}
+          <span>{isCopied ? 'Copied' : 'Copy'}</span>
+        </button>
+      </div>
+      <pre>
+        <code>{code}</code>
+      </pre>
+    </div>
+  )
+}
+
+function ChatMessageContent({ content }) {
+  const blocks = parseMarkdownBlocks(String(content))
+
   return (
     <div className="chat-markdown">
       {blocks.map((block, index) => {
-        const lines = block.split('\n').map((line) => line.trim()).filter(Boolean)
-        const isList = lines.every((line) => /^([-*]\s+|\d+\.\s+)/.test(line))
-
-        if (isList) {
-          const isOrdered = lines.every((line) => /^\d+\.\s+/.test(line))
-          const ListTag = isOrdered ? 'ol' : 'ul'
-
-          return (
-            <ListTag key={`${block}-${index}`}>
-              {lines.map((line) => (
-                <li key={line}>{renderInlineMarkdown(line.replace(/^([-*]\s+|\d+\.\s+)/, ''))}</li>
-              ))}
-            </ListTag>
-          )
+        if (block.type === 'code') {
+          return <CodeBlock key={`${block.language}-${index}`} code={block.code} language={block.language} />
         }
 
-        return <p key={`${block}-${index}`}>{renderInlineMarkdown(lines.join(' '))}</p>
+        return <TextBlock key={`${block.content}-${index}`} content={block.content} />
       })}
     </div>
   )
