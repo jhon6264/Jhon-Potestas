@@ -6,6 +6,7 @@ import ProjectsPage from './pages/ProjectsPage'
 import TechStackPage from './pages/TechStackPage'
 import CertificationsPage from './pages/CertificationsPage'
 import BlogPage from './pages/BlogPage'
+import ResumePage from './pages/ResumePage'
 import NotFoundPage from './pages/NotFoundPage'
 import { useTheme } from './hooks/useTheme'
 
@@ -40,6 +41,7 @@ function App() {
           <Route path="/tech-stack" element={<TechStackPage />} />
           <Route path="/certifications" element={<CertificationsPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/resume" element={<ResumePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

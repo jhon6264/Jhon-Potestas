@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 420" role="img" aria-labelledby="title">
+  <title id="title">Halftone open book illustration</title>
+  <defs>
+    <pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.5" fill="#050505"/>
+      <circle cx="7" cy="7" r="1" fill="#050505"/>
+    </pattern>
+    <filter id="rough">
+      <feTurbulence type="fractalNoise" baseFrequency=".034" numOctaves="2" seed="22"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </defs>
+  <path d="M56 279 95 102c63-17 126-12 188 31 58-36 122-41 194-17l32 184c-76-23-144-17-206 31-76-47-156-62-247-52Z" fill="#fff" filter="url(#rough)"/>
+  <path d="M96 129c61-12 112 0 154 38l18 128c-53-34-112-47-176-38Z" fill="#050505"/>
+  <path d="M300 163c44-32 96-40 158-23l21 131c-65-11-119 2-162 39Z" fill="#050505"/>
+  <path d="M116 154c42-6 80 2 115 24M112 185c43-5 84 4 125 27M108 216c45-3 88 7 132 31M325 178c35-18 75-23 120-14M331 210c37-16 77-19 121-9M337 240c38-12 78-13 120-3" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+  <path d="M96 129c61-12 112 0 154 38l18 128c-53-34-112-47-176-38Z" fill="url(#dots)" opacity=".35"/>
+  <path d="M300 163c44-32 96-40 158-23l21 131c-65-11-119 2-162 39Z" fill="url(#dots)" opacity=".35"/>
+</svg>

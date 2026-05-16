@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520" role="img" aria-labelledby="title">
+  <title id="title">Halftone hourglass illustration</title>
+  <defs>
+    <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#fff"/>
+      <circle cx="6.5" cy="6.5" r="1" fill="#fff"/>
+    </pattern>
+    <filter id="rough">
+      <feTurbulence type="fractalNoise" baseFrequency=".036" numOctaves="2" seed="15"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </defs>
+  <path d="M120 63h181l42 58-80 134 82 148-52 58H126l-51-55 83-151-78-135Z" fill="#fff" filter="url(#rough)"/>
+  <path d="M126 95h168l17 22-75 124 76 144-23 29H132l-22-27 77-146-75-124Z" fill="#050505"/>
+  <path d="M141 116h137l-58 101-17 5Z" fill="url(#dots)"/>
+  <path d="M203 269 151 390h119l-50-121Z" fill="url(#dots)"/>
+  <path d="M170 252h82M153 94h113M151 415h121" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+</svg>

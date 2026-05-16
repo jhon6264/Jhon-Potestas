@@ -417,10 +417,10 @@ function HomePage({ theme, onToggleTheme }) {
               <span>Send Email</span>
               <ChevronRight size={14} />
             </button>
-            <a className="action-btn allow-rounded" href={site.resume} target="_blank" rel="noreferrer">
+            <Link className="action-btn allow-rounded" to="/resume">
               <ExternalLink size={14} />
               <span>Hire Me</span>
-            </a>
+            </Link>
             <Link className="action-btn allow-rounded" to="/blog">
               <BookOpen size={14} />
               <span>Read my Blog</span>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520" role="img" aria-labelledby="title">
+  <title id="title">Halftone phone illustration</title>
+  <defs>
+    <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.5" fill="#fff"/>
+      <circle cx="6.5" cy="6.5" r="1" fill="#fff"/>
+    </pattern>
+    <filter id="rough">
+      <feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7"/>
+      <feDisplacementMap in="SourceGraphic" scale="4"/>
+    </filter>
+  </defs>
+  <path d="M155 467 74 371 53 258 95 119 197 48 314 83 365 217 326 392 242 477Z" fill="#fff" filter="url(#rough)"/>
+  <path d="M117 131c36-43 117-75 172-33 53 42 46 164 20 248-20 65-81 115-140 79-61-37-86-207-52-294Z" fill="#050505"/>
+  <rect x="148" y="86" width="148" height="282" rx="34" fill="#fff" transform="rotate(9 222 227)"/>
+  <rect x="164" y="111" width="116" height="225" rx="20" fill="#050505" transform="rotate(9 222 227)"/>
+  <rect x="171" y="124" width="100" height="196" rx="16" fill="url(#dots)" opacity=".75" transform="rotate(9 222 227)"/>
+  <path d="M96 255c20 38 45 68 76 92M302 207c29 19 41 45 33 77" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" role="img" aria-labelledby="title">
+  <title id="title">Halftone laptop illustration</title>
+  <defs>
+    <pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.7" fill="#fff"/>
+      <circle cx="7" cy="7" r="1.2" fill="#fff"/>
+    </pattern>
+    <filter id="rough">
+      <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="4"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/>
+    </filter>
+  </defs>
+  <path d="M108 325 44 292 122 126 176 79 442 122 464 285 391 337 223 352Z" fill="#fff" filter="url(#rough)"/>
+  <path d="M162 104 421 146 432 275 207 243Z" fill="#050505"/>
+  <path d="M178 123 399 158 407 252 219 226Z" fill="url(#dots)" opacity=".9"/>
+  <path d="M207 253 432 286 365 322 117 292Z" fill="#050505"/>
+  <path d="M144 277 337 300 296 321 108 299Z" fill="url(#dots)"/>
+  <path d="M54 255c51-19 80-19 116 7 17 12 30 30 53 43l-99-12c-26-2-54-15-70-38Z" fill="#050505"/>
+  <path d="M74 257c36-8 64-3 92 21" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <path d="M226 174h85M223 196h124M219 218h72" stroke="#050505" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+</svg>
