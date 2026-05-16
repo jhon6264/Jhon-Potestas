@@ -8,7 +8,7 @@ export const chatConfig = {
   avatar: '/assets/profile/Day.png',
   maxMessageLength: 1000,
   title: `Chat with ${firstName}`,
-  hint: 'Ask me about programming, web dev, or tech!',
+  hint: 'Ask me about Programming',
   introMessage:
     'Hi there! Thanks for visiting my website. Feel free to ask me anything about programming, web development, or my experiences in tech. Let me know how I can help!',
 }

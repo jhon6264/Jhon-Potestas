@@ -82,7 +82,7 @@ function ChatWidget() {
             {isTyping ? (
               <article className="chat-message chat-message-assistant">
                 <p className="chat-message-author">{chatConfig.displayName}</p>
-                <div className="chat-bubble chat-bubble-assistant">Typing...</div>
+                <div className="chat-bubble chat-bubble-assistant chat-thinking">Thinking...</div>
               </article>
             ) : null}
           </div>

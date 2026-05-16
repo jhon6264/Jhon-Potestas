@@ -1595,7 +1595,7 @@ a,
   padding: 0.95rem 1rem;
   font-size: 1rem;
   line-height: 1.45;
-  font-weight: 800;
+  font-weight: 400;
 }
 
 .chat-bubble-user {
@@ -1619,6 +1619,23 @@ a,
   height: 0;
   border-top: 0.65rem solid #1e293b;
   border-left: 0.65rem solid transparent;
+}
+
+.chat-thinking {
+  background:
+    linear-gradient(90deg, #1e293b 0%, #334155 42%, #64748b 50%, #334155 58%, #1e293b 100%);
+  background-size: 220% 100%;
+  animation: thinking-shimmer 1.25s ease-in-out infinite;
+}
+
+@keyframes thinking-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
 }
 
 .chat-composer {
