@@ -33,12 +33,13 @@ function ChatWidget() {
     const value = input.trim()
     if (!value) return
 
-    setMessages((prev) => [...prev, { id: Date.now(), role: 'user', content: value }])
+    const nextMessages = [...messages, { id: Date.now(), role: 'user', content: value }]
+    setMessages(nextMessages)
     setInput('')
     setIsTyping(true)
 
     try {
-      const reply = await sendChatMessage()
+      const reply = await sendChatMessage(nextMessages)
       setMessages((prev) => [...prev, { id: Date.now() + 1, ...reply }])
     } catch {
       setMessages((prev) => [
