@@ -11,6 +11,53 @@ const starterMessages = [
   },
 ]
 
+function renderInlineMarkdown(text) {
+  const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g)
+
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>
+    }
+
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={`${part}-${index}`}>{part.slice(1, -1)}</code>
+    }
+
+    return part
+  })
+}
+
+function ChatMessageContent({ content }) {
+  const blocks = String(content)
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+
+  return (
+    <div className="chat-markdown">
+      {blocks.map((block, index) => {
+        const lines = block.split('\n').map((line) => line.trim()).filter(Boolean)
+        const isList = lines.every((line) => /^([-*]\s+|\d+\.\s+)/.test(line))
+
+        if (isList) {
+          const isOrdered = lines.every((line) => /^\d+\.\s+/.test(line))
+          const ListTag = isOrdered ? 'ol' : 'ul'
+
+          return (
+            <ListTag key={`${block}-${index}`}>
+              {lines.map((line) => (
+                <li key={line}>{renderInlineMarkdown(line.replace(/^([-*]\s+|\d+\.\s+)/, ''))}</li>
+              ))}
+            </ListTag>
+          )
+        }
+
+        return <p key={`${block}-${index}`}>{renderInlineMarkdown(lines.join(' '))}</p>
+      })}
+    </div>
+  )
+}
+
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState('')
@@ -76,7 +123,9 @@ function ChatWidget() {
             {messages.map((message) => (
               <article key={message.id} className={`chat-message chat-message-${message.role}`}>
                 {message.role === 'assistant' ? <p className="chat-message-author">{chatConfig.displayName}</p> : null}
-                <div className={`chat-bubble chat-bubble-${message.role}`}>{message.content}</div>
+                <div className={`chat-bubble chat-bubble-${message.role}`}>
+                  <ChatMessageContent content={message.content} />
+                </div>
               </article>
             ))}
             {isTyping ? (
