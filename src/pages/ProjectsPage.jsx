@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ArrowLeft, Check, Copy, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { projectFilters, site } from '../data/site'
+import { useStaggeredReveal } from '../hooks/useStaggeredReveal'
 
 async function copyText(value) {
   if (navigator.clipboard?.writeText) {
@@ -27,6 +28,7 @@ async function copyText(value) {
 function ProjectsPage() {
   const [activeFilter, setActiveFilter] = useState('All')
   const [copiedLink, setCopiedLink] = useState('')
+  const revealRef = useStaggeredReveal()
 
   const filteredProjects = useMemo(() => {
     if (activeFilter === 'All') return site.projects
@@ -40,16 +42,16 @@ function ProjectsPage() {
   }
 
   return (
-    <main className="stack-view">
+    <main className="stack-view" ref={revealRef}>
       <div className="stack-width">
-        <header className="stack-header">
+        <header className="stack-header" data-stagger-item>
           <Link to="/">
             <ArrowLeft size={18} /> Back to Home
           </Link>
           <h1>Projects</h1>
         </header>
 
-        <div className="outlined-tags">
+        <div className="outlined-tags" data-stagger-item>
           {projectFilters.map((filter) => (
             <button
               key={filter}
@@ -64,7 +66,7 @@ function ProjectsPage() {
 
         <div className="projects-view-grid">
           {filteredProjects.map((project) => (
-            <article className="project-view-tile" key={project.name}>
+            <article className="project-view-tile" key={project.name} data-stagger-item>
               <h3>{project.name}</h3>
               <p>{project.description}</p>
               <div className="project-link-row">

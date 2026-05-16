@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { animate } from 'animejs'
 import { ArrowRight, Check, Copy, MessageCircle, X } from 'lucide-react'
 import { chatConfig } from '../../data/chatConfig'
 import { sendChatMessage } from '../../services/chatClient'
@@ -10,6 +11,17 @@ const starterMessages = [
     content: chatConfig.introMessage,
   },
 ]
+
+const promptSuggestions = [
+  'Show me your projects',
+  'What tech stack do you use?',
+  'How can I contact you?',
+  'Are you available for work?',
+]
+
+function shouldReduceMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
 
 function renderInlineMarkdown(text) {
   const parts = String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g)
@@ -124,10 +136,15 @@ function ChatMessageContent({ content }) {
 
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false)
+  const [shouldRenderPanel, setShouldRenderPanel] = useState(false)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState(starterMessages)
   const [isTyping, setIsTyping] = useState(false)
+  const panelRef = useRef(null)
+  const fabRef = useRef(null)
   const messageContainerRef = useRef(null)
+  const nextMessageIdRef = useRef(2)
+  const panelTransitionIdRef = useRef(0)
   const canSend = useMemo(
     () => input.trim().length > 0 && input.length <= chatConfig.maxMessageLength && !isTyping,
     [input, isTyping],
@@ -139,24 +156,80 @@ function ChatWidget() {
     }
   }, [messages, isTyping, isOpen])
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    const value = input.trim()
+  useEffect(() => {
+    const handleOpenChat = () => {
+      panelTransitionIdRef.current += 1
+      setShouldRenderPanel(true)
+      setIsOpen(true)
+    }
+
+    window.addEventListener('portfolio:open-chat', handleOpenChat)
+
+    return () => {
+      window.removeEventListener('portfolio:open-chat', handleOpenChat)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen || !panelRef.current || shouldReduceMotion()) return undefined
+
+    animate(panelRef.current, {
+      opacity: [0, 1],
+      translateY: [18, 0],
+      scale: [0.98, 1],
+      duration: 320,
+      ease: 'outCubic',
+    })
+
+    if (fabRef.current) {
+      animate(fabRef.current, {
+        scale: [0.94, 1],
+        duration: 260,
+        ease: 'outBack',
+      })
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!messageContainerRef.current || shouldReduceMotion()) return undefined
+
+    const latestMessage = messageContainerRef.current.querySelector('.chat-message:last-of-type')
+    if (!latestMessage) return undefined
+
+    const messageAnimation = animate(latestMessage, {
+      opacity: [0, 1],
+      translateY: [10, 0],
+      duration: 260,
+      ease: 'outCubic',
+    })
+
+    return () => {
+      messageAnimation.revert()
+    }
+  }, [messages, isTyping])
+
+  const sendMessage = async (value) => {
     if (!value) return
 
-    const nextMessages = [...messages, { id: Date.now(), role: 'user', content: value }]
+    const userMessage = { id: nextMessageIdRef.current, role: 'user', content: value.trim() }
+    nextMessageIdRef.current += 1
+    const nextMessages = [...messages, userMessage]
     setMessages(nextMessages)
     setInput('')
     setIsTyping(true)
 
     try {
       const reply = await sendChatMessage(nextMessages)
-      setMessages((prev) => [...prev, { id: Date.now() + 1, ...reply }])
+      const replyId = nextMessageIdRef.current
+      nextMessageIdRef.current += 1
+      setMessages((prev) => [...prev, { id: replyId, ...reply }])
     } catch {
+      const fallbackId = nextMessageIdRef.current
+      nextMessageIdRef.current += 1
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: fallbackId,
           role: 'assistant',
           content: 'The chat service is not available right now. Please try again later.',
         },
@@ -166,10 +239,54 @@ function ChatWidget() {
     }
   }
 
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    await sendMessage(input.trim())
+  }
+
+  const openChat = () => {
+    panelTransitionIdRef.current += 1
+    setShouldRenderPanel(true)
+    setIsOpen(true)
+  }
+
+  const closeChat = () => {
+    if (!panelRef.current || shouldReduceMotion()) {
+      setIsOpen(false)
+      setShouldRenderPanel(false)
+      return
+    }
+
+    panelTransitionIdRef.current += 1
+    const transitionId = panelTransitionIdRef.current
+    setIsOpen(false)
+    animate(panelRef.current, {
+      opacity: [1, 0],
+      translateY: [0, 16],
+      scale: [1, 0.98],
+      duration: 220,
+      ease: 'inCubic',
+      onComplete: () => {
+        if (transitionId === panelTransitionIdRef.current) {
+          setShouldRenderPanel(false)
+        }
+      },
+    })
+  }
+
+  const toggleChat = () => {
+    if (isOpen) {
+      closeChat()
+      return
+    }
+
+    openChat()
+  }
+
   return (
     <div className="chat-shell" aria-live="polite">
-      {isOpen ? (
-        <section className="chat-panel" role="dialog" aria-label="Portfolio assistant">
+      {shouldRenderPanel ? (
+        <section className="chat-panel" ref={panelRef} role="dialog" aria-label="Portfolio assistant">
           <header className="chat-header">
             <img className="chat-header-avatar" src={chatConfig.avatar} alt={chatConfig.displayName} />
             <div className="chat-header-copy">
@@ -179,7 +296,7 @@ function ChatWidget() {
                 Online
               </p>
             </div>
-            <button type="button" className="chat-close-button" onClick={() => setIsOpen(false)} aria-label="Close chat">
+            <button type="button" className="chat-close-button" onClick={closeChat} aria-label="Close chat">
               <X size={22} />
             </button>
           </header>
@@ -195,10 +312,23 @@ function ChatWidget() {
             {isTyping ? (
               <article className="chat-message chat-message-assistant">
                 <p className="chat-message-author">{chatConfig.displayName}</p>
-                <div className="chat-bubble chat-bubble-assistant chat-thinking">Thinking...</div>
+                <div className="chat-bubble chat-bubble-assistant chat-thinking" aria-label="Assistant is typing">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
               </article>
             ) : null}
           </div>
+          {messages.length === 1 && !isTyping ? (
+            <div className="chat-prompts" aria-label="Suggested prompts">
+              {promptSuggestions.map((prompt) => (
+                <button key={prompt} type="button" onClick={() => sendMessage(prompt)}>
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <form className="chat-composer" onSubmit={handleSubmit}>
             <div className="chat-composer-row">
               <label htmlFor="chat-input" className="sr-only">
@@ -228,8 +358,9 @@ function ChatWidget() {
 
       <button
         type="button"
+        ref={fabRef}
         className="chat-fab"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={toggleChat}
         aria-label={isOpen ? 'Close assistant' : 'Open assistant'}
         aria-expanded={isOpen}
       >

@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom'
+import { animate } from 'animejs'
 import {
   BookOpen,
   ChevronDown,
   ChevronRight,
   ExternalLink,
+  FileText,
   Mail,
   MapPin,
+  MessageCircle,
   Moon,
   Sun,
   Trophy,
@@ -293,6 +296,34 @@ function HomePage({ theme, onToggleTheme }) {
     setToastMessage('Email Copied Successfully')
   }
 
+  const handleOpenChat = () => {
+    window.dispatchEvent(new CustomEvent('portfolio:open-chat'))
+  }
+
+  const handleProjectTilePointerMove = (event) => {
+    const tile = event.currentTarget
+    const rect = tile.getBoundingClientRect()
+
+    tile.style.setProperty('--shine-x', `${event.clientX - rect.left}px`)
+    tile.style.setProperty('--shine-y', `${event.clientY - rect.top}px`)
+  }
+
+  const showProjectTileShine = (event) => {
+    animate(event.currentTarget, {
+      '--shine-opacity': [0, 1],
+      duration: 220,
+      ease: 'outCubic',
+    })
+  }
+
+  const hideProjectTileShine = (event) => {
+    animate(event.currentTarget, {
+      '--shine-opacity': 0,
+      duration: 260,
+      ease: 'outCubic',
+    })
+  }
+
   return (
     <main className="profile-page page-transition">
       <div className={`copy-toast allow-rounded ${toastMessage ? 'copy-toast-visible' : ''}`} role="status">
@@ -437,7 +468,16 @@ function HomePage({ theme, onToggleTheme }) {
               </div>
               <div className="project-grid">
                 {featuredProjects.map((project) => (
-                  <a key={project.name} href={project.link} target="_blank" rel="noreferrer" className="project-tile">
+                  <a
+                    key={project.name}
+                    href={project.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="project-tile"
+                    onPointerEnter={showProjectTileShine}
+                    onPointerMove={handleProjectTilePointerMove}
+                    onPointerLeave={hideProjectTileShine}
+                  >
                     <h3>{project.name}</h3>
                     <p>{project.description}</p>
                     <span className="domain-chip">{getDomain(project.link)}</span>
@@ -452,7 +492,7 @@ function HomePage({ theme, onToggleTheme }) {
               <DeveloperAccessCard />
               <div className="feature-strip allow-rounded">
                 <strong>I'M BUILDING</strong>
-                <span>mobile, web, and AI-powered projects</span>
+                <span>Mobile and Web Projects Today!</span>
               </div>
             </aside>
 
@@ -559,15 +599,15 @@ function HomePage({ theme, onToggleTheme }) {
             </article>
             <article>
               <h3>Email</h3>
-              <div className="mini-list">
-                <a href={`mailto:${site.email}`}>
+              <div className="mini-list contact-email-list">
+                <button type="button" onClick={handleCopyEmail}>
                   <Mail size={15} /> {site.email}
-                </a>
-                <a href={`mailto:${site.email}`}>
-                  Let's Talk <ChevronRight size={13} />
-                </a>
+                </button>
+                <button type="button" onClick={handleOpenChat}>
+                  <MessageCircle size={15} /> Let's Talk
+                </button>
                 <Link to="/blog">
-                  Blog <ChevronRight size={13} />
+                  <FileText size={15} /> Blog
                 </Link>
               </div>
             </article>
