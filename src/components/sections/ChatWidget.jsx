@@ -443,9 +443,9 @@ function ChatWidget() {
       {shouldRenderPanel ? (
         <section className="chat-panel" ref={panelRef} role="dialog" aria-label="Portfolio assistant">
           <header className="chat-header">
-            <img className="chat-header-avatar" src={chatConfig.avatar} alt={chatConfig.displayName} />
+            <img className="chat-header-avatar" src={chatConfig.avatar} alt={chatConfig.messageAuthor} />
             <div className="chat-header-copy">
-              <p className="chat-title">{chatConfig.title}</p>
+              <p className="chat-title">{chatConfig.headerTitle}</p>
               <p className="chat-subtitle">
                 <span aria-hidden="true"></span>
                 Online
@@ -458,7 +458,7 @@ function ChatWidget() {
           <div className="chat-messages" ref={messageContainerRef}>
             {messages.map((message) => (
               <article key={message.id} className={`chat-message chat-message-${message.role}`}>
-                {message.role === 'assistant' ? <p className="chat-message-author">{chatConfig.displayName}</p> : null}
+                {message.role === 'assistant' ? <p className="chat-message-author">{chatConfig.messageAuthor}</p> : null}
                 <div className={`chat-bubble chat-bubble-${message.role}`}>
                   <ChatMessageContent content={message.content} />
                   {message.role === 'assistant' ? (
@@ -469,7 +469,7 @@ function ChatWidget() {
             ))}
             {isTyping ? (
               <article className="chat-message chat-message-assistant">
-                <p className="chat-message-author">{chatConfig.displayName}</p>
+                <p className="chat-message-author">{chatConfig.messageAuthor}</p>
                 <div className="chat-bubble chat-bubble-assistant chat-thinking" aria-label="Assistant is typing">
                   <span></span>
                   <span></span>
@@ -523,7 +523,7 @@ function ChatWidget() {
         aria-expanded={isOpen}
       >
         <MessageCircle size={18} />
-        <span>{chatConfig.title}</span>
+        <span>{chatConfig.buttonLabel}</span>
       </button>
     </div>
   )
