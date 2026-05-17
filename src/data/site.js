@@ -1,5 +1,5 @@
 export const site = {
-  name: 'Jhon Potestas',
+  name: 'Jhon Cristopher R. Potestas',
   location: 'Davao Del Sur, Philippines',
   tagline: 'Student \\ Junior App Developer \\ Junior Web Developer',
   email: 'Spyam17@gmail.com',

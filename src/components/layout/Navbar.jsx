@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import { useState } from 'react'
+import { site } from '../../data/site'
 import ThemeToggle from '../ui/ThemeToggle'
 
 const links = [
@@ -21,7 +22,7 @@ function Navbar({ theme, onToggleTheme }) {
       <div className="container navbar-inner">
         <Link className="brand" to="/">
           <span className="brand-dot" aria-hidden="true"></span>
-          Jhon Potestas
+          {site.name}
         </Link>
 
         <button
