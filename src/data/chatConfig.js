@@ -5,10 +5,10 @@ const firstName = site.name.split(' ')[0]
 export const chatConfig = {
   firstName,
   ownerName: site.name,
-  displayName: "Jhon's AI",
+  displayName: `Chat with ${firstName}`,
   avatar: '/assets/profile/Day.png',
   maxMessageLength: 1000,
-  title: "Jhon's AI",
+  title: `Chat with ${firstName}`,
   hint: 'Ask me about Programming',
   introMessage:
     "Hi, I'm Jhon's AI. Ask me about my resume, projects, skills, or programming.",
