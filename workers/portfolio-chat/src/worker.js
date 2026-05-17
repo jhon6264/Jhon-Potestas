@@ -1,8 +1,8 @@
 const GROQ_CHAT_COMPLETIONS_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const FALLBACK_MODELS = [
-  'qwen/qwen3-32b',
   'llama-3.3-70b-versatile',
   'meta-llama/llama-4-scout-17b-16e-instruct',
+  'qwen/qwen3-32b',
 ]
 const DEFAULT_ALLOWED_ORIGINS = ['https://jhonpotestas.vercel.app', 'http://localhost:5173', 'http://127.0.0.1:5173']
 const DEFAULT_PORTFOLIO_CONTEXT_URL = 'https://jhonpotestas.vercel.app/portfolio-context.json'
@@ -452,7 +452,7 @@ function extractLoosePayload(content) {
 
 function inferLinksFromText(content) {
   const text = String(content || '').toLowerCase()
-  const suggestsDestination = /\b(available|browse|check|download|find|go|link|open|page|profile|redirect|see|send|view|visit)\b/.test(
+  const suggestsDestination = /\b(available|browse|check|download|find|go|link|list|open|page|profile|redirect|see|send|show|view|visit)\b/.test(
     text,
   )
   const links = []
@@ -470,21 +470,81 @@ function inferLinksFromText(content) {
   return links
 }
 
-function sanitizeAssistantPayload(content, registry) {
+function formatList(items) {
+  if (items.length <= 1) return items[0] || ''
+  if (items.length === 2) return `${items[0]} and ${items[1]}`
+
+  return `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`
+}
+
+function isFormatFallback(content) {
+  return /couldn['’]t format|could not format|trouble formatting/i.test(String(content || ''))
+}
+
+function getContextualFallback(links, sourceText, portfolioContextData) {
+  const labels = links.map((link) => String(link.label || '').toLowerCase())
+  const text = String(sourceText || '').toLowerCase()
+  const hasLink = (label) => labels.includes(label.toLowerCase())
+
+  if (hasLink('Projects') || /\b(project|projects)\b/.test(text)) {
+    const projects = Array.isArray(portfolioContextData?.projects) ? portfolioContextData.projects : []
+    const featuredProjects = projects
+      .filter((project) => project.featured !== false)
+      .map((project) => project.name)
+      .filter(Boolean)
+    const projectNames = featuredProjects.length
+      ? featuredProjects
+      : ['SMCBI Document Tracking System', 'Owly', 'SmartLock', 'RiderX', 'Pakman Lite 3D', 'PokeTalk']
+
+    return `Here are my featured projects: ${formatList(projectNames)}. You can open the Projects page for the full list.`
+  }
+
+  if (hasLink('Resume') || /\b(resume|cv|hire me)\b/.test(text)) {
+    return 'My resume is available on the Resume/Hire Me page, and the PDF can be downloaded there.'
+  }
+
+  if (hasLink('Tech Stack') || /\b(skill|skills|tech stack|technology|technologies)\b/.test(text)) {
+    const groups = Array.isArray(portfolioContextData?.techStack) ? portfolioContextData.techStack : []
+    const categories = groups.map((group) => group.category).filter(Boolean)
+    const summary = categories.length
+      ? `My tech stack is grouped into ${formatList(categories)}.`
+      : 'My tech stack includes frontend, backend, cloud, AI, and developer tools.'
+
+    return `${summary} You can open the Tech Stack page for the details.`
+  }
+
+  if (hasLink('Certifications') || /\b(certificate|certification|certifications)\b/.test(text)) {
+    return 'You can view my certifications and achievements on the Certifications page.'
+  }
+
+  if (hasLink('Blog') || /\b(blog|article|posts?)\b/.test(text)) {
+    return 'You can read my posts on the Blog page.'
+  }
+
+  if (hasLink('GitHub')) return 'You can view my public code and repositories on GitHub.'
+  if (hasLink('Facebook')) return 'You can reach or view me through my Facebook profile.'
+
+  return FORMAT_FALLBACK
+}
+
+function sanitizeAssistantPayload(content, registry, portfolioContextData) {
   const parsed = extractJsonObject(content)
   const loosePayload = parsed ? null : extractLoosePayload(content)
   const rawMessage = parsed?.message || loosePayload?.message || cleanAssistantText(content)
   const cleanedMessage = cleanAssistantText(rawMessage).slice(0, 1200)
-  const message = looksLikeStructuredPayload(cleanedMessage) ? FORMAT_FALLBACK : cleanedMessage || FORMAT_FALLBACK
   const links = sanitizeLinks(
     [
       ...(Array.isArray(parsed?.links) ? parsed.links : []),
       ...(Array.isArray(loosePayload?.links) ? loosePayload.links : []),
-      ...inferLinksFromText(message),
+      ...inferLinksFromText(`${cleanedMessage} ${content}`),
     ],
     registry,
   )
   const navigation = sanitizeNavigation(parsed?.navigation || loosePayload?.navigation, registry)
+  const message =
+    cleanedMessage && !looksLikeStructuredPayload(cleanedMessage) && !isFormatFallback(cleanedMessage)
+      ? cleanedMessage
+      : getContextualFallback(links, cleanedMessage || content, portfolioContextData)
 
   return {
     message,
@@ -504,7 +564,7 @@ async function callGroq({ apiKey, model, messages }) {
       model,
       messages,
       temperature: 0.5,
-      max_completion_tokens: 350,
+      max_completion_tokens: 600,
     }),
   })
 
@@ -578,7 +638,7 @@ export default {
         env,
         messages: [{ role: 'system', content: buildSystemPrompt(portfolioContext.text) }, ...messages],
       })
-      const assistantPayload = sanitizeAssistantPayload(result.content, trustedLinks)
+      const assistantPayload = sanitizeAssistantPayload(result.content, trustedLinks, portfolioContext.data)
 
       return jsonResponse(request, env, {
         message: assistantPayload.message,

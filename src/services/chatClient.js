@@ -1,4 +1,5 @@
 import { extractTrustedLinksFromText, mergeChatLinks, normalizeChatLink } from '../data/chatLinks'
+import { site } from '../data/site'
 
 const workerUrl = import.meta.env.VITE_CHAT_WORKER_URL?.trim()
 const FORMAT_FALLBACK = "I couldn't format that answer. Please ask me again."
@@ -146,7 +147,7 @@ function mergeStructuredReply(data) {
 
 function inferLinksFromText(content) {
   const text = String(content || '').toLowerCase()
-  const suggestsDestination = /\b(available|browse|check|download|find|go|link|open|page|profile|redirect|see|send|view|visit)\b/.test(
+  const suggestsDestination = /\b(available|browse|check|download|find|go|link|list|open|page|profile|redirect|see|send|show|view|visit)\b/.test(
     text,
   )
   const links = []
@@ -164,6 +165,50 @@ function inferLinksFromText(content) {
   return links
 }
 
+function formatList(items) {
+  if (items.length <= 1) return items[0] || ''
+  if (items.length === 2) return `${items[0]} and ${items[1]}`
+
+  return `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`
+}
+
+function isFormatFallback(content) {
+  return /couldn['’]t format|could not format|trouble formatting/i.test(String(content || ''))
+}
+
+function getContextualFallback(links, sourceText) {
+  const labels = links.map((link) => link.label.toLowerCase())
+  const text = String(sourceText || '').toLowerCase()
+  const hasLink = (label) => labels.includes(label.toLowerCase())
+
+  if (hasLink('Projects') || /\b(project|projects)\b/.test(text)) {
+    const featuredProjects = site.projects.filter((project) => project.featured).map((project) => project.name)
+    return `Here are my featured projects: ${formatList(featuredProjects)}. You can open the Projects page for the full list.`
+  }
+
+  if (hasLink('Resume') || /\b(resume|cv|hire me)\b/.test(text)) {
+    return 'My resume is available on the Resume/Hire Me page, and the PDF can be downloaded there.'
+  }
+
+  if (hasLink('Tech Stack') || /\b(skill|skills|tech stack|technology|technologies)\b/.test(text)) {
+    const categories = site.techStack.map((group) => group.category)
+    return `My tech stack is grouped into ${formatList(categories)}. You can open the Tech Stack page for the details.`
+  }
+
+  if (hasLink('Certifications') || /\b(certificate|certification|certifications)\b/.test(text)) {
+    return 'You can view my certifications and achievements on the Certifications page.'
+  }
+
+  if (hasLink('Blog') || /\b(blog|article|posts?)\b/.test(text)) {
+    return 'You can read my posts on the Blog page.'
+  }
+
+  if (hasLink('GitHub')) return 'You can view my public code and repositories on GitHub.'
+  if (hasLink('Facebook')) return 'You can reach or view me through my Facebook profile.'
+
+  return FORMAT_FALLBACK
+}
+
 export function normalizeAssistantReply(data) {
   const structuredData = mergeStructuredReply(data)
   const cleanedMessage = cleanAssistantText(structuredData?.message)
@@ -179,10 +224,12 @@ export function normalizeAssistantReply(data) {
     extracted.links,
     inferredLinks,
   )
+  const content =
+    safeContent && !isFormatFallback(safeContent) ? safeContent : getContextualFallback(links, cleanedMessage)
 
   return {
     role: 'assistant',
-    content: safeContent || FORMAT_FALLBACK,
+    content,
     links,
     navigation,
     model: data?.model,
