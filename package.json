@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "context": "node scripts/generate-portfolio-context.js",
+    "build": "npm run context && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

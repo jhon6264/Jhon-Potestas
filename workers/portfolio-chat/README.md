@@ -2,6 +2,8 @@
 
 Cloudflare Worker endpoint for the portfolio chatbot. The frontend calls this Worker, and the Worker calls Groq with the API key stored as a Cloudflare secret.
 
+The Worker also fetches `https://jhonpotestas.vercel.app/portfolio-context.json` on each chat request. That context is generated from `src/data/site.js` during `npm run build`, so the chatbot can answer from the currently deployed portfolio content, including the resume page and resume PDF.
+
 ## Local Setup
 
 1. Copy the local secrets example:
@@ -38,7 +40,13 @@ npx wrangler secret put GROQ_API_KEY --config workers/portfolio-chat/wrangler.to
 npx wrangler deploy --config workers/portfolio-chat/wrangler.toml
 ```
 
-4. Copy the deployed Worker URL and add it to Vercel as:
+4. Build and deploy the portfolio so `portfolio-context.json` is available on Vercel:
+
+```bash
+npm run build
+```
+
+5. Copy the deployed Worker URL and add it to Vercel as:
 
 ```txt
 VITE_CHAT_WORKER_URL=https://your-worker-name.your-subdomain.workers.dev

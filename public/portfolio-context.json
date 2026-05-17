@@ -1,0 +1,287 @@
+{
+  "source": "Live portfolio website content",
+  "note": "Generated from src/data/site.js. Deploy the portfolio after content changes so the chat Worker can fetch the newest context.",
+  "profile": {
+    "displayName": "Jhon Potestas",
+    "location": "Davao Del Sur, Philippines",
+    "email": "Spyam17@gmail.com",
+    "tagline": "Student \\ Junior App Developer \\ Junior Web Developer",
+    "focus": "I am currently focused on mobile app development with AI and LLM integration, AI agents for small project subtasks, and advanced video editing workflows."
+  },
+  "resume": {
+    "available": true,
+    "page": "https://jhonpotestas.vercel.app/resume",
+    "downloadUrl": "https://jhonpotestas.vercel.app/assets/resume/JhonPotestas_Resume.pdf",
+    "fileName": "JhonPotestas_Resume.pdf",
+    "guidance": "If a visitor asks for a resume, CV, hiring details, or where to download the resume, say that the resume is available on the Resume/Hire Me page and can be downloaded from the PDF link."
+  },
+  "socials": {
+    "github": "https://github.com/jhon6264",
+    "facebook": "https://www.facebook.com/jhoncristopher.relativopotestas.7/",
+    "linkedin": ""
+  },
+  "about": [
+    "I am an Information Technology student specializing in software development, currently learning, building, and exploring different areas of web, mobile, and AI-powered applications.",
+    "I have foundational knowledge in web development with HTML, CSS, and JavaScript, and I have explored frameworks such as Bootstrap 5, Tailwind CSS, Next.js, and Laravel.",
+    "I also build mobile applications using React Native Expo and Flutter while creating short-form content and editing videos for Facebook Reels and YouTube Shorts."
+  ],
+  "experience": [
+    {
+      "year": "Mid 2025",
+      "title": "Building Projects",
+      "org": "Portfolio and capstone project development"
+    },
+    {
+      "year": "2025",
+      "title": "Laravel and APIs",
+      "org": "Backend framework and API work"
+    },
+    {
+      "year": "2024",
+      "title": "PHP Language",
+      "org": "Backend/web programming"
+    },
+    {
+      "year": "2024",
+      "title": "Game Development",
+      "org": "Godot and game-building exploration"
+    },
+    {
+      "year": "Late 2023",
+      "title": "Bootstrap 5 and Tailwind CSS",
+      "org": "Frontend styling frameworks"
+    },
+    {
+      "year": "2023",
+      "title": "GitHub Integration",
+      "org": "Version control workflow"
+    },
+    {
+      "year": "2023",
+      "title": "Basic HTML, CSS, and JavaScript",
+      "org": "Web fundamentals"
+    },
+    {
+      "year": "2023",
+      "title": "C++ and Java",
+      "org": "Programming fundamentals"
+    },
+    {
+      "year": "2023",
+      "title": "Started Coding",
+      "org": "Personal learning milestone"
+    },
+    {
+      "year": "2023",
+      "title": "BS Information Technology",
+      "org": "St. Mary's College of Bansalan Inc."
+    }
+  ],
+  "techStack": [
+    {
+      "category": "Frontend",
+      "items": [
+        "JavaScript",
+        "React",
+        "Next.js",
+        "Tailwind CSS",
+        "Bootstrap 5",
+        "Webpack",
+        "ESLint",
+        "Prettier"
+      ]
+    },
+    {
+      "category": "Backend",
+      "items": [
+        "Node.js",
+        "Python",
+        "PHP",
+        "Java",
+        "Express.js",
+        "Laravel",
+        "MySQL"
+      ]
+    },
+    {
+      "category": "DevOps & Cloud",
+      "items": [
+        "Firebase",
+        "Cloudflare Worker"
+      ]
+    },
+    {
+      "category": "AI & Machine Learning",
+      "items": [
+        "Hugging Face",
+        "NVIDIA NIM",
+        "OpenRouter"
+      ]
+    },
+    {
+      "category": "Security & Identity",
+      "items": []
+    },
+    {
+      "category": "Developer Tools",
+      "items": [
+        "Git",
+        "GitHub",
+        "VS Code",
+        "Antigravity",
+        "Cline",
+        "Codex",
+        "Discord"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "SMCBI Document Tracking System",
+      "description": "Capstone project for document tracking and process visibility.",
+      "tech": [
+        "React",
+        "Laravel Mix",
+        "Laravel",
+        "MySQL"
+      ],
+      "category": [
+        "Web App",
+        "Capstone"
+      ],
+      "link": "https://github.com/jhon6264/SMCBI-Document-Tracking-System",
+      "featured": true
+    },
+    {
+      "name": "Owly",
+      "description": "Personal mobile app powered by an LLM assistant concept.",
+      "tech": [
+        "React Native Expo",
+        "LLM"
+      ],
+      "category": [
+        "Mobile App",
+        "AI"
+      ],
+      "link": "https://github.com/jhon6264/Owly",
+      "featured": true
+    },
+    {
+      "name": "SmartLock",
+      "description": "Mobile app integrated with ESP32 hardware and Firebase workflows.",
+      "tech": [
+        "React Native Expo",
+        "JavaScript",
+        "Firebase"
+      ],
+      "category": [
+        "Mobile App"
+      ],
+      "link": "https://github.com/jhon6264/Smart-Lock-V2",
+      "featured": true
+    },
+    {
+      "name": "RiderX",
+      "description": "E-commerce platform focused on motorcycle products and listing flows.",
+      "tech": [
+        "React",
+        "Laravel Mix",
+        "Laravel",
+        "MySQL"
+      ],
+      "category": [
+        "Web App"
+      ],
+      "link": "https://github.com/jhon6264/RiderX",
+      "featured": true
+    },
+    {
+      "name": "Pakman Lite 3D",
+      "description": "A 3D game inspired by Pac-Man with custom game assets.",
+      "tech": [
+        "Godot",
+        "GDScript",
+        "Blender"
+      ],
+      "category": [
+        "Game"
+      ],
+      "link": "https://github.com/jhon6264/Pakman-Lite",
+      "featured": true
+    },
+    {
+      "name": "PokeTalk",
+      "description": "Pokemon-themed chatbot that responds through API-driven logic.",
+      "tech": [
+        "PHP",
+        "API"
+      ],
+      "category": [
+        "Web App",
+        "AI"
+      ],
+      "link": "https://github.com/jhon6264/PokeTalk-V2",
+      "featured": true
+    },
+    {
+      "name": "Swaggy Adventure",
+      "description": "A 2D adventure game inspired by classic platformer mechanics.",
+      "tech": [
+        "Godot",
+        "GDScript",
+        "Aseprite"
+      ],
+      "category": [
+        "Game"
+      ],
+      "link": "https://github.com/jhon6264/Super-Mario",
+      "featured": false
+    }
+  ],
+  "achievements": [
+    {
+      "title": "MTV Spoof Champion Award",
+      "issuer": "DICT",
+      "year": "2025"
+    },
+    {
+      "title": "Achievement Placeholder",
+      "issuer": "To be announced",
+      "year": "----"
+    }
+  ],
+  "recommendations": [
+    {
+      "quote": "Work smart, not hard, pero hunahuna-a sa kung ang pag-work smart nimo kay for short-term or long-term.",
+      "name": "Aidan Llyod",
+      "role": "Professor at St. Mary's College of Bansalan Inc."
+    },
+    {
+      "quote": "Recommendation placeholder for future collaborators and mentors.",
+      "name": "Future Reference",
+      "role": "Pending"
+    }
+  ],
+  "memberships": [
+    "SDRRMC",
+    "YouTube Automation Community",
+    "Facebook Automation Community",
+    "AI Community"
+  ],
+  "availability": [
+    "Freelance projects",
+    "Full-time work",
+    "Collaborations",
+    "Speaking",
+    "Workshops",
+    "Open-source projects"
+  ],
+  "pages": {
+    "home": "https://jhonpotestas.vercel.app/",
+    "projects": "https://jhonpotestas.vercel.app/projects",
+    "techStack": "https://jhonpotestas.vercel.app/tech-stack",
+    "certifications": "https://jhonpotestas.vercel.app/certifications",
+    "blog": "https://jhonpotestas.vercel.app/blog",
+    "resume": "https://jhonpotestas.vercel.app/resume"
+  }
+}
