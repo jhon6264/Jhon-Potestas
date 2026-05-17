@@ -13,6 +13,7 @@ const MAX_PORTFOLIO_CONTEXT_CHARS = 9000
 const PORTFOLIO_CONTEXT_TIMEOUT_MS = 2500
 const MAX_LINKS = 4
 const INTERNAL_ROUTES = new Set(['/', '/projects', '/tech-stack', '/certifications', '/blog', '/resume'])
+const FORMAT_FALLBACK = "I couldn't format that answer. Please ask me again."
 
 const SYSTEM_PROMPT = `You are the portfolio assistant for Jhon Potestas.
 Use a friendly and professional attitude: warm, clear, respectful, and practical.
@@ -23,6 +24,7 @@ Silently identify the user's intent before answering: greeting, acknowledgment, 
 Before answering, check the attached live portfolio context. The Worker fetches that context during each chat request, so treat it as the newest available deployed portfolio content.
 Use the live portfolio context as the source of truth for Jhon's resume, pages, projects, tech stack, experience, contact details, availability, and other portfolio content.
 If the live portfolio context conflicts with the fallback known details in this prompt, the live portfolio context wins.
+Never include hidden reasoning, chain-of-thought, or <think> tags in the answer.
 If a visitor asks about a resume, CV, hiring page, or downloadable resume, check the resume section in the live portfolio context first. If resume.available is true, say the resume is available on the Resume/Hire Me page and can be downloaded from the listed PDF link.
 If the visitor asks whether your information is current, say you check the deployed portfolio context during each chat request, and new portfolio changes appear after the portfolio is deployed.
 You can answer programming questions. Keep general programming answers practical, concise, and separate from claims about Jhon's personal experience unless the live portfolio context supports those claims.
@@ -44,7 +46,7 @@ Do not invent achievements, employment, certifications, links, or private detail
 If information is not available in the portfolio context, say that Jhon has not added that detail yet.
 Use simple formatting only when it improves readability.
 Use plain paragraphs for short answers and bullets only for lists.
-Avoid Markdown links unless the user asks for links; write plain URLs or plain email only when contact details are requested.
+Do not write Markdown links or raw URLs in the message. Use the JSON links array for URLs. Write the email as plain text only when contact details are requested.
 If the user asks for code, put code in fenced Markdown code blocks with a language tag, like \`\`\`js, \`\`\`jsx, \`\`\`html, or \`\`\`css. Keep code concise and explain only what is necessary.
 Avoid emojis unless the user uses them first or the tone clearly calls for one.
 
@@ -120,6 +122,7 @@ function normalizeMessages(rawMessages) {
 function cleanAssistantText(content) {
   return String(content || '')
     .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/<think>[\s\S]*/gi, '')
     .trim()
 }
 
@@ -208,6 +211,50 @@ function isGenericLabel(label) {
   return /^(here|this link|link|link here|open link)$/i.test(label) || /^https?:\/\//i.test(label)
 }
 
+function labelKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+function findTrustedLinkByLabel(label, registry) {
+  const key = labelKey(label)
+  if (!key) return null
+
+  const aliases = {
+    blog: 'Blog',
+    blogpage: 'Blog',
+    certifications: 'Certifications',
+    certification: 'Certifications',
+    certificationpage: 'Certifications',
+    cv: 'Resume',
+    facebook: 'Facebook',
+    github: 'GitHub',
+    hire: 'Resume',
+    hireme: 'Resume',
+    homepage: 'Home',
+    home: 'Home',
+    pdf: 'Resume PDF',
+    projects: 'Projects',
+    projectpage: 'Projects',
+    resumepage: 'Resume',
+    resume: 'Resume',
+    resumepdf: 'Resume PDF',
+    skills: 'Tech Stack',
+    tech: 'Tech Stack',
+    techstack: 'Tech Stack',
+    technologies: 'Tech Stack',
+  }
+  const directMatch = [...registry.values()].find((link) => labelKey(link.label) === key)
+  const targetLabel = aliases[key]
+
+  if (directMatch) return directMatch
+  if (!targetLabel) return null
+
+  return [...registry.values()].find((link) => link.label === targetLabel) || null
+}
+
 function addTrustedLink(registry, label, url, description = '') {
   const absoluteUrl = normalizeAbsoluteUrl(url)
   if (!absoluteUrl) return
@@ -274,7 +321,12 @@ function sanitizeLinks(rawLinks, registry) {
   const links = []
 
   rawLinks.forEach((rawLink) => {
-    const trustedLink = findTrustedLink(rawLink?.url, registry)
+    const urlMatch = findTrustedLink(rawLink?.url, registry)
+    const labelMatch = findTrustedLinkByLabel(rawLink?.label || rawLink, registry)
+    const trustedLink =
+      labelMatch && urlMatch && urlMatch.label === 'Home' && labelMatch.label !== 'Home'
+        ? labelMatch
+        : urlMatch || labelMatch
     if (!trustedLink || seen.has(trustedLink.url)) return
 
     const requestedLabel = compactText(rawLink?.label)
@@ -292,7 +344,12 @@ function sanitizeLinks(rawLinks, registry) {
 function sanitizeNavigation(rawNavigation, registry) {
   if (!rawNavigation || typeof rawNavigation !== 'object') return null
 
-  const trustedLink = findTrustedLink(rawNavigation.url, registry)
+  const urlMatch = findTrustedLink(rawNavigation.url, registry)
+  const labelMatch = findTrustedLinkByLabel(rawNavigation.label, registry)
+  const trustedLink =
+    labelMatch && urlMatch && urlMatch.label === 'Home' && labelMatch.label !== 'Home'
+      ? labelMatch
+      : urlMatch || labelMatch
   if (!trustedLink) return null
 
   return {
@@ -315,19 +372,119 @@ function extractJsonObject(content) {
   if (start === -1 || end === -1 || end <= start) return null
 
   try {
-    return JSON.parse(candidate.slice(start, end + 1))
+    const parsed = JSON.parse(candidate.slice(start, end + 1))
+    if (!parsed || typeof parsed !== 'object') return null
+    return 'message' in parsed || 'links' in parsed || 'navigation' in parsed ? parsed : null
   } catch {
     return null
   }
 }
 
+function looksLikeStructuredPayload(content) {
+  const text = String(content || '').trim()
+  return (
+    /^```json/i.test(text) ||
+    /^\{\s*"(message|links|navigation)"/i.test(text) ||
+    (/"message"\s*:/i.test(text) && /"links"\s*:/i.test(text))
+  )
+}
+
+function decodeJsonStringFragment(value) {
+  const fragment = String(value || '')
+  const safeFragment = Array.from(fragment, (char) => (char.charCodeAt(0) < 32 ? ' ' : char)).join('')
+
+  try {
+    return JSON.parse(`"${safeFragment}"`)
+  } catch {
+    return fragment
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '\t')
+      .replace(/\\\\/g, '\\')
+  }
+}
+
+function extractLooseStringField(content, fieldName) {
+  const pattern = new RegExp(`"${fieldName}"\\s*:\\s*"((?:\\\\.|[^"\\\\])*)`, 'i')
+  const match = String(content || '').match(pattern)
+  return match ? decodeJsonStringFragment(match[1]).trim() : ''
+}
+
+function extractLooseLinks(content) {
+  const text = String(content || '')
+  const links = []
+  const labeledLinkPattern =
+    /"label"\s*:\s*"((?:\\.|[^"\\])*)[\s\S]{0,220}?"url"\s*:\s*"((?:\\.|[^"\\])*)/gi
+  const urlPattern = /"url"\s*:\s*"((?:\\.|[^"\\])*)/gi
+  let match = labeledLinkPattern.exec(text)
+
+  while (match) {
+    links.push({
+      label: decodeJsonStringFragment(match[1]).trim(),
+      url: decodeJsonStringFragment(match[2]).trim(),
+    })
+    match = labeledLinkPattern.exec(text)
+  }
+
+  if (!links.length) {
+    match = urlPattern.exec(text)
+
+    while (match) {
+      links.push({ url: decodeJsonStringFragment(match[1]).trim() })
+      match = urlPattern.exec(text)
+    }
+  }
+
+  return links
+}
+
+function extractLoosePayload(content) {
+  const text = cleanAssistantText(content)
+  if (!looksLikeStructuredPayload(text)) return null
+
+  const message = extractLooseStringField(text, 'message')
+  const links = extractLooseLinks(text)
+
+  if (!message && !links.length) return null
+
+  return { message, links, navigation: null }
+}
+
+function inferLinksFromText(content) {
+  const text = String(content || '').toLowerCase()
+  const suggestsDestination = /\b(available|browse|check|download|find|go|link|open|page|profile|redirect|see|send|view|visit)\b/.test(
+    text,
+  )
+  const links = []
+
+  if (!suggestsDestination) return links
+
+  if (/\b(resume|cv|hire me|pdf)\b/.test(text)) links.push({ label: 'Resume' })
+  if (/\b(project|projects)\b/.test(text)) links.push({ label: 'Projects' })
+  if (/\b(skill|skills|tech stack|technology|technologies)\b/.test(text)) links.push({ label: 'Tech Stack' })
+  if (/\b(certificate|certification|certifications)\b/.test(text)) links.push({ label: 'Certifications' })
+  if (/\b(blog|article|posts?)\b/.test(text)) links.push({ label: 'Blog' })
+  if (/\bgithub\b/.test(text)) links.push({ label: 'GitHub' })
+  if (/\bfacebook\b/.test(text)) links.push({ label: 'Facebook' })
+
+  return links
+}
+
 function sanitizeAssistantPayload(content, registry) {
   const parsed = extractJsonObject(content)
-  const message = String(parsed?.message || cleanAssistantText(content))
-    .trim()
-    .slice(0, 1200)
-  const links = sanitizeLinks(parsed?.links, registry)
-  const navigation = sanitizeNavigation(parsed?.navigation, registry)
+  const loosePayload = parsed ? null : extractLoosePayload(content)
+  const rawMessage = parsed?.message || loosePayload?.message || cleanAssistantText(content)
+  const cleanedMessage = cleanAssistantText(rawMessage).slice(0, 1200)
+  const message = looksLikeStructuredPayload(cleanedMessage) ? FORMAT_FALLBACK : cleanedMessage || FORMAT_FALLBACK
+  const links = sanitizeLinks(
+    [
+      ...(Array.isArray(parsed?.links) ? parsed.links : []),
+      ...(Array.isArray(loosePayload?.links) ? loosePayload.links : []),
+      ...inferLinksFromText(message),
+    ],
+    registry,
+  )
+  const navigation = sanitizeNavigation(parsed?.navigation || loosePayload?.navigation, registry)
 
   return {
     message,

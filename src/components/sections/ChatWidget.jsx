@@ -4,7 +4,7 @@ import { animate } from 'animejs'
 import { ArrowRight, Check, Copy, ExternalLink, MessageCircle, X } from 'lucide-react'
 import { chatConfig } from '../../data/chatConfig'
 import { getInternalRoute } from '../../data/chatLinks'
-import { sendChatMessage } from '../../services/chatClient'
+import { normalizeAssistantReply, sendChatMessage } from '../../services/chatClient'
 
 const CHAT_MESSAGES_STORAGE_KEY = 'jhon-portfolio-chat-messages'
 const CHAT_OPEN_STORAGE_KEY = 'jhon-portfolio-chat-open'
@@ -38,6 +38,20 @@ function loadStoredChatOpen() {
 function normalizeStoredMessage(message) {
   if (!message || !['user', 'assistant'].includes(message.role) || typeof message.content !== 'string') {
     return null
+  }
+
+  if (message.role === 'assistant') {
+    const normalizedReply = normalizeAssistantReply({
+      message: message.content,
+      links: message.links,
+      navigation: message.navigation,
+      model: message.model,
+    })
+
+    return {
+      id: Number.isFinite(message.id) ? message.id : Date.now(),
+      ...normalizedReply,
+    }
   }
 
   return {

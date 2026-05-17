@@ -29,6 +29,51 @@ function isGenericLabel(label) {
   return /^(here|this link|link|link here|open link)$/i.test(label) || /^https?:\/\//i.test(label)
 }
 
+function labelKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+function findTrustedLinkByLabel(label, registry) {
+  const key = labelKey(label)
+  if (!key) return null
+
+  const aliases = {
+    blog: 'Blog',
+    blogpage: 'Blog',
+    certifications: 'Certifications',
+    certification: 'Certifications',
+    certificationpage: 'Certifications',
+    cv: 'Resume',
+    facebook: 'Facebook',
+    github: 'GitHub',
+    hire: 'Resume',
+    hireme: 'Resume',
+    homepage: 'Home',
+    home: 'Home',
+    pdf: 'Resume PDF',
+    projects: 'Projects',
+    projectpage: 'Projects',
+    resumepage: 'Resume',
+    resume: 'Resume',
+    resumepdf: 'Resume PDF',
+    skills: 'Tech Stack',
+    tech: 'Tech Stack',
+    techstack: 'Tech Stack',
+    technologies: 'Tech Stack',
+  }
+
+  const targetLabel = aliases[key]
+  const directMatch = [...registry.values()].find((link) => labelKey(link.label) === key)
+
+  if (directMatch) return directMatch
+  if (!targetLabel) return null
+
+  return [...registry.values()].find((link) => link.label === targetLabel) || null
+}
+
 function getKind(url) {
   try {
     const parsed = new URL(url)
@@ -86,16 +131,20 @@ export function buildTrustedLinkRegistry() {
 
 export function normalizeChatLink(rawLink, registry = buildTrustedLinkRegistry()) {
   const normalizedUrl = absoluteUrl(rawLink?.url || rawLink)
-  if (!normalizedUrl) return null
+  const labelMatch = findTrustedLinkByLabel(rawLink?.label || rawLink, registry)
+  if (!normalizedUrl) return labelMatch
 
   const trustedLink = registry.get(trimTrailingSlash(normalizedUrl))
   if (!trustedLink) return null
   const requestedLabel = compactLabel(rawLink?.label, '')
+  const shouldPreferLabel =
+    labelMatch && trustedLink.url !== labelMatch.url && trustedLink.label === 'Home' && labelMatch.label !== 'Home'
+  const resolvedLink = shouldPreferLabel ? labelMatch : trustedLink
 
   return {
-    ...trustedLink,
-    label: isGenericLabel(requestedLabel) ? trustedLink.label : compactLabel(requestedLabel, trustedLink.label),
-    description: compactLabel(rawLink?.description, trustedLink.description),
+    ...resolvedLink,
+    label: isGenericLabel(requestedLabel) ? resolvedLink.label : compactLabel(requestedLabel, resolvedLink.label),
+    description: compactLabel(rawLink?.description, resolvedLink.description),
   }
 }
 
