@@ -4,6 +4,18 @@
   <head>
     
     <meta charset="UTF-8" />
+    <script>
+      ;(() => {
+        try {
+          const theme = localStorage.getItem('jhon-portfolio-theme') || 'dark'
+          document.documentElement.classList.toggle('dark', theme === 'dark')
+          document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark')
+        } catch {
+          document.documentElement.classList.add('dark')
+          document.documentElement.setAttribute('data-theme', 'dark')
+        }
+      })()
+    </script>
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />

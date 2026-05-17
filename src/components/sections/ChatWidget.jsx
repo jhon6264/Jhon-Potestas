@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { animate } from 'animejs'
-import { ArrowRight, Check, Copy, MessageCircle, X } from 'lucide-react'
+import { ArrowRight, Check, Copy, ExternalLink, MessageCircle, X } from 'lucide-react'
 import { chatConfig } from '../../data/chatConfig'
+import { getInternalRoute } from '../../data/chatLinks'
 import { sendChatMessage } from '../../services/chatClient'
+
+const CHAT_MESSAGES_STORAGE_KEY = 'jhon-portfolio-chat-messages'
+const CHAT_OPEN_STORAGE_KEY = 'jhon-portfolio-chat-open'
+const MAX_STORED_MESSAGES = 30
 
 const starterMessages = [
   {
     id: 1,
     role: 'assistant',
     content: chatConfig.introMessage,
+    links: [],
+    navigation: null,
   },
 ]
 
@@ -19,8 +27,66 @@ const promptSuggestions = [
   'Are you available for work?',
 ]
 
+function loadStoredChatOpen() {
+  try {
+    return sessionStorage.getItem(CHAT_OPEN_STORAGE_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function normalizeStoredMessage(message) {
+  if (!message || !['user', 'assistant'].includes(message.role) || typeof message.content !== 'string') {
+    return null
+  }
+
+  return {
+    id: Number.isFinite(message.id) ? message.id : Date.now(),
+    role: message.role,
+    content: message.content,
+    links: Array.isArray(message.links) ? message.links : [],
+    navigation: message.navigation || null,
+    model: message.model,
+  }
+}
+
+function loadStoredMessages() {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(CHAT_MESSAGES_STORAGE_KEY) || '[]')
+    const storedMessages = Array.isArray(parsed) ? parsed.map(normalizeStoredMessage).filter(Boolean) : []
+    return storedMessages.length ? storedMessages : starterMessages
+  } catch {
+    return starterMessages
+  }
+}
+
+function getNextMessageId(messages) {
+  return messages.reduce((nextId, message) => Math.max(nextId, Number(message.id) + 1 || nextId), 1)
+}
+
 function shouldReduceMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value)
+      return
+    } catch {
+      // Fall back for browsers that block the Clipboard API outside secure gestures.
+    }
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
 }
 
 function renderInlineMarkdown(text) {
@@ -97,7 +163,7 @@ function CodeBlock({ code, language }) {
   const [isCopied, setIsCopied] = useState(false)
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(code)
+    await copyText(code)
     setIsCopied(true)
     window.setTimeout(() => setIsCopied(false), 1400)
   }
@@ -134,21 +200,82 @@ function ChatMessageContent({ content }) {
   )
 }
 
+function ChatLinkCard({ link, onOpen }) {
+  const [isCopied, setIsCopied] = useState(false)
+  const isExternal = link.kind === 'external'
+
+  const handleCopy = async (event) => {
+    event.stopPropagation()
+    await copyText(link.url)
+    setIsCopied(true)
+    window.setTimeout(() => setIsCopied(false), 1400)
+  }
+
+  return (
+    <div className={`chat-link-card chat-link-card-${link.kind || 'external'}`}>
+      <button type="button" className="chat-link-open" onClick={() => onOpen(link)} aria-label={`Open ${link.label}`}>
+        <span className="chat-link-label-row">
+          <span className="chat-link-label">{link.label}</span>
+          {isExternal ? <ExternalLink size={15} /> : <ArrowRight size={15} />}
+        </span>
+        {link.description ? <span className="chat-link-description">{link.description}</span> : null}
+        <span className="chat-link-url">{link.displayUrl || link.url}</span>
+      </button>
+      <button type="button" className="chat-link-copy" onClick={handleCopy} aria-label={`Copy ${link.label} link`}>
+        {isCopied ? <Check size={15} /> : <Copy size={15} />}
+        <span>{isCopied ? 'Copied' : 'Copy'}</span>
+      </button>
+    </div>
+  )
+}
+
+function ChatMessageLinks({ links, onOpenLink }) {
+  if (!Array.isArray(links) || !links.length) return null
+
+  return (
+    <div className="chat-link-list" aria-label="Related links">
+      {links.map((link) => (
+        <ChatLinkCard key={link.url} link={link} onOpen={onOpenLink} />
+      ))}
+    </div>
+  )
+}
+
 function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [shouldRenderPanel, setShouldRenderPanel] = useState(false)
+  const navigate = useNavigate()
+  const [isOpen, setIsOpen] = useState(() => loadStoredChatOpen())
+  const [shouldRenderPanel, setShouldRenderPanel] = useState(() => loadStoredChatOpen())
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState(starterMessages)
+  const [messages, setMessages] = useState(() => loadStoredMessages())
   const [isTyping, setIsTyping] = useState(false)
   const panelRef = useRef(null)
   const fabRef = useRef(null)
   const messageContainerRef = useRef(null)
-  const nextMessageIdRef = useRef(2)
+  const nextMessageIdRef = useRef(getNextMessageId(messages))
   const panelTransitionIdRef = useRef(0)
   const canSend = useMemo(
     () => input.trim().length > 0 && input.length <= chatConfig.maxMessageLength && !isTyping,
     [input, isTyping],
   )
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(CHAT_OPEN_STORAGE_KEY, String(isOpen))
+    } catch {
+      // Session persistence is optional.
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        CHAT_MESSAGES_STORAGE_KEY,
+        JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)),
+      )
+    } catch {
+      // Session persistence is optional.
+    }
+  }, [messages])
 
   useEffect(() => {
     if (messageContainerRef.current) {
@@ -211,7 +338,7 @@ function ChatWidget() {
   const sendMessage = async (value) => {
     if (!value) return
 
-    const userMessage = { id: nextMessageIdRef.current, role: 'user', content: value.trim() }
+    const userMessage = { id: nextMessageIdRef.current, role: 'user', content: value.trim(), links: [] }
     nextMessageIdRef.current += 1
     const nextMessages = [...messages, userMessage]
     setMessages(nextMessages)
@@ -231,7 +358,9 @@ function ChatWidget() {
         {
           id: fallbackId,
           role: 'assistant',
-          content: 'The chat service is not available right now. Please try again later.',
+          content: "I couldn't answer right now. Please try again.",
+          links: [],
+          navigation: null,
         },
       ])
     } finally {
@@ -274,6 +403,18 @@ function ChatWidget() {
     })
   }
 
+  const handleOpenLink = (link) => {
+    if (link.kind === 'internal') {
+      navigate(getInternalRoute(link))
+      setShouldRenderPanel(true)
+      setIsOpen(true)
+      return
+    }
+
+    window.open(link.url, '_blank', 'noopener,noreferrer')
+    closeChat()
+  }
+
   const toggleChat = () => {
     if (isOpen) {
       closeChat()
@@ -306,6 +447,9 @@ function ChatWidget() {
                 {message.role === 'assistant' ? <p className="chat-message-author">{chatConfig.displayName}</p> : null}
                 <div className={`chat-bubble chat-bubble-${message.role}`}>
                   <ChatMessageContent content={message.content} />
+                  {message.role === 'assistant' ? (
+                    <ChatMessageLinks links={message.links} onOpenLink={handleOpenLink} />
+                  ) : null}
                 </div>
               </article>
             ))}

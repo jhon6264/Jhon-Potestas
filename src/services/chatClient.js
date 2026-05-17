@@ -1,3 +1,5 @@
+import { extractTrustedLinksFromText, mergeChatLinks, normalizeChatLink } from '../data/chatLinks'
+
 const workerUrl = import.meta.env.VITE_CHAT_WORKER_URL?.trim()
 
 function getChatEndpoint() {
@@ -12,7 +14,23 @@ async function sendMockChatMessage() {
 
   return {
     role: 'assistant',
-    content: 'UI mode only for now. Next, we can connect this chat to a Cloudflare Worker that calls Groq.',
+    content: "I'm Jhon's AI. The live Worker is not connected in this local mode yet.",
+    links: [],
+    navigation: null,
+  }
+}
+
+function normalizeAssistantReply(data) {
+  const extracted = extractTrustedLinksFromText(data?.message || '')
+  const navigation = normalizeChatLink(data?.navigation)
+  const links = mergeChatLinks(navigation ? [navigation] : [], data?.links || [], extracted.links)
+
+  return {
+    role: 'assistant',
+    content: extracted.content || data?.message || 'I could not format that answer. Please try again.',
+    links,
+    navigation,
+    model: data?.model,
   }
 }
 
@@ -34,9 +52,5 @@ export async function sendChatMessage(messages) {
     throw new Error(data?.error || 'Chat request failed')
   }
 
-  return {
-    role: 'assistant',
-    content: data.message,
-    model: data.model,
-  }
+  return normalizeAssistantReply(data)
 }
