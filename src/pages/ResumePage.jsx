@@ -11,7 +11,7 @@ function ResumePage() {
             <ArrowLeft size={18} /> Back to Home
           </Link>
           <h1>Resume</h1>
-          <a className="resume-download" href={site.resume} download="JhonPotestas_Resume.pdf">
+          <a className="resume-download" href={site.resume} download="Jhon_PotestasResume.pdf">
             <Download size={17} />
             <span>Download</span>
           </a>
@@ -21,7 +21,7 @@ function ResumePage() {
           <object data={`${site.resume}#toolbar=1&navpanes=0`} type="application/pdf">
             <p>
               Your browser cannot display this PDF.{' '}
-              <a href={site.resume} download="JhonPotestas_Resume.pdf">
+              <a href={site.resume} download="Jhon_PotestasResume.pdf">
                 Download the resume
               </a>
               .
