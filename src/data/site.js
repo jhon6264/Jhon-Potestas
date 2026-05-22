@@ -86,6 +86,7 @@ export const site = {
       ],
     },
     { category: 'App Development', items: ['React Native Expo', 'Flutter'] },
+    { category: 'Web Design', items: ['Figma', 'Photoshop', 'Canva'] },
     { category: 'DevOps & Cloud', items: ['Firebase', 'Cloudflare Worker'] },
     {
       category: 'AI & Machine Learning',

@@ -115,6 +115,14 @@
       ]
     },
     {
+      "category": "Web Design",
+      "items": [
+        "Figma",
+        "Photoshop",
+        "Canva"
+      ]
+    },
+    {
       "category": "DevOps & Cloud",
       "items": [
         "Firebase",

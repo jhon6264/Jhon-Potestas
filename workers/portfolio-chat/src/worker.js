@@ -60,6 +60,7 @@ Fallback known public details:
 - Frontend: HTML, CSS, Vite, JavaScript, TypeScript, React, Next.js, Tailwind CSS, Bootstrap 5, Webpack, ESLint, Prettier
 - Backend: Node.js, Python, PHP, Java, Express.js, Laravel, MySQL
 - App Development: React Native Expo, Flutter
+- Web Design: Figma, Photoshop, Canva
 - Cloud/tools: Firebase, Cloudflare Worker, Git, GitHub, VS Code, Expo, Antigravity, Cline, Codex, Discord
 - Featured projects: SMCBI Document Tracking System, Owly, SmartLock, RiderX, Pakman Lite 3D, PokeTalk
 - GitHub: https://github.com/jhon6264
