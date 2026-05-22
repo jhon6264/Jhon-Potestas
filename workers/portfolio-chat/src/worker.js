@@ -57,9 +57,10 @@ Fallback known public details:
 - Role/tagline: Student, Junior App Developer, Junior Web Developer
 - Resume: available on the Resume/Hire Me page, with a downloadable PDF
 - Focus: mobile app development with AI and LLM integration, AI agents for project subtasks, and advanced video editing workflows
-- Frontend: JavaScript, React, Next.js, Tailwind CSS, Bootstrap 5, Webpack, ESLint, Prettier
+- Frontend: HTML, CSS, Vite, JavaScript, TypeScript, React, Next.js, Tailwind CSS, Bootstrap 5, Webpack, ESLint, Prettier
 - Backend: Node.js, Python, PHP, Java, Express.js, Laravel, MySQL
-- Cloud/tools: Firebase, Cloudflare Worker, Git, GitHub, VS Code, Antigravity, Cline, Codex, Discord
+- App Development: React Native Expo, Flutter
+- Cloud/tools: Firebase, Cloudflare Worker, Git, GitHub, VS Code, Expo, Antigravity, Cline, Codex, Discord
 - Featured projects: SMCBI Document Tracking System, Owly, SmartLock, RiderX, Pakman Lite 3D, PokeTalk
 - GitHub: https://github.com/jhon6264
 - Facebook: https://www.facebook.com/jhoncristopher.relativopotestas.7/

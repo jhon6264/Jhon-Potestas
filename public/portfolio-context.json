@@ -81,7 +81,11 @@
     {
       "category": "Frontend",
       "items": [
+        "HTML",
+        "CSS",
+        "Vite",
         "JavaScript",
+        "TypeScript",
         "React",
         "Next.js",
         "Tailwind CSS",
@@ -101,6 +105,13 @@
         "Express.js",
         "Laravel",
         "MySQL"
+      ]
+    },
+    {
+      "category": "App Development",
+      "items": [
+        "React Native Expo",
+        "Flutter"
       ]
     },
     {
@@ -128,6 +139,7 @@
         "Git",
         "GitHub",
         "VS Code",
+        "Expo",
         "Antigravity",
         "Cline",
         "Codex",

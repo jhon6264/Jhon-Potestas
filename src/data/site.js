@@ -59,7 +59,11 @@ export const site = {
     {
       category: 'Frontend',
       items: [
+        'HTML',
+        'CSS',
+        'Vite',
         'JavaScript',
+        'TypeScript',
         'React',
         'Next.js',
         'Tailwind CSS',
@@ -81,6 +85,7 @@ export const site = {
         'MySQL',
       ],
     },
+    { category: 'App Development', items: ['React Native Expo', 'Flutter'] },
     { category: 'DevOps & Cloud', items: ['Firebase', 'Cloudflare Worker'] },
     {
       category: 'AI & Machine Learning',
@@ -89,7 +94,7 @@ export const site = {
     { category: 'Security & Identity', items: [] },
     {
       category: 'Developer Tools',
-      items: ['Git', 'GitHub', 'VS Code', 'Antigravity', 'Cline', 'Codex', 'Discord'],
+      items: ['Git', 'GitHub', 'VS Code', 'Expo', 'Antigravity', 'Cline', 'Codex', 'Discord'],
     },
   ],
   projects: [
