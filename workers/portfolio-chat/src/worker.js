@@ -275,7 +275,7 @@ function buildTrustedLinks(portfolioContextData) {
   addTrustedLink(registry, 'Certifications', '/certifications', 'Open my certifications page')
   addTrustedLink(registry, 'Blog', '/blog', 'Open my blog')
   addTrustedLink(registry, 'Resume', '/resume', 'Open my resume page')
-  addTrustedLink(registry, 'Resume PDF', '/assets/resume/JhonPotestas_Resume.pdf', 'Open my resume PDF')
+  addTrustedLink(registry, 'Resume PDF', '/assets/resume/Jhon_PotestasResume.pdf', 'Open my resume PDF')
   addTrustedLink(registry, 'GitHub', 'https://github.com/jhon6264', 'Open my GitHub profile')
   addTrustedLink(
     registry,

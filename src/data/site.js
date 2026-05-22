@@ -3,7 +3,7 @@ export const site = {
   location: 'Davao Del Sur, Philippines',
   tagline: 'Student \\ Junior App Developer \\ Junior Web Developer',
   email: 'Spyam17@gmail.com',
-  resume: '/assets/resume/JhonPotestas_Resume.pdf',
+  resume: '/assets/resume/Jhon_PotestasResume.pdf',
   profileImage: '/assets/profile/profile-main.jpg',
   featuredCardImage: '/assets/card/dev-card.jpg',
   badges: ['Rescue Olympic 2nd Runner Up 2023', 'MTV Spoof Champion 2025'],

@@ -21,7 +21,7 @@ const context = {
     available: Boolean(site.resume),
     page: absoluteUrl('/resume'),
     downloadUrl: absoluteUrl(site.resume),
-    fileName: 'JhonPotestas_Resume.pdf',
+    fileName: 'Jhon_PotestasResume.pdf',
     guidance:
       'If a visitor asks for a resume, CV, hiring details, or where to download the resume, say that the resume is available on the Resume/Hire Me page and can be downloaded from the PDF link.',
   },
